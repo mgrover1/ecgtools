@@ -26,13 +26,18 @@ jobs:
         python-version: ["3.10", "3.11", "3.12"]
     steps:
       - uses: actions/checkout@v4
-      - name: Create conda environment
-        uses: mamba-org/provision-with-micromamba@main
         with:
-          cache-downloads: true
-          micromamba-version: "latest"
+          fetch-depth: 0 # Fetch all history for all branches and tags.
+      - name: Create conda environment
+        uses: mamba-org/setup-micromamba@v2
+        with:
           environment-file: ci/environment.yml
-          extra-specs: |
+          init-shell: >-
+            bash
+          cache-environment: true
+          cache-downloads: true
+          post-cleanup: "all"
+          create-args: |
             python=${{ matrix.python-version }}
 
       - name: Install ecgtools
@@ -45,7 +50,7 @@ jobs:
           python -m pytest
 
       - name: Upload code coverage to Codecov
-        uses: codecov/codecov-action@v4.5.0
+        uses: codecov/codecov-action@v5.4.0
         with:
           file: ./coverage.xml
           flags: unittests
